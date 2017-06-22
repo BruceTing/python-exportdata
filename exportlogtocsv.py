@@ -11,17 +11,19 @@ list = [
 now = time.strftime("%Y-%m-%d", time.localtime())
 print 'now is: ' + now
 
-input_args = sys.argv
-data_file = input_args[1]
-args = input_args[2:]
+argvs = sys.argv
 
 def validate_args():
     ''' 参数校验 '''
-    if not data_file.endswith('.csv') and not args:
-        print '''platform: linux; python version: 2.7.0 or newer; require: argvs is not right, first arg is file name with csv suffix, and second argvs is date that format is: yyyy-MM-dd, example: python exportlogtocsv.py data.csv 2017-04-21 2017-04-22'''
+    usage = 'platform: linux; python version: 2.7.0 or newer; require: first arg is file name with csv suffix, and second argvs is date that format is: yyyy-MM-dd, example: python exportlogtocsv.py data.csv 2017-04-21 2017-04-22'
+    if len(argvs) < 3:
+        print usage
+        return False
+    elif not argvs[1].endswith('.csv'):
+        print usage
         return False
     else:
-        for arg in args:
+        for arg in argvs[2:]:
             result = re.search(r'^([0-9]{4})-([0-9]{2})-([0-9]{2})', arg)
             if not result:
                 print arg + ' is not right, the format is: yyyy-MM-dd'
@@ -31,7 +33,7 @@ def validate_args():
 def gen_url():
     ''' url 生成器 '''
     for uri in list:
-        for arg in args:
+        for arg in argvs[2:]:
             now_date = date.today()
             log_date = date(int(arg[0:4]), int(arg[5:7]), int(arg[8:]))
             if now_date > log_date:
@@ -49,7 +51,7 @@ def parse_data():
     或
     [INFO ][2017/06/21 05:29:33.097][http-nio-8121-exec-5][1b0bf09e7e3f45f78963c4d653f7367d] SomeServiceImpl - 信息关键字[12345678]单一信息[12345678]原始数据[[12:34:56:78, 12:34:56:78]]类型[2]对应的指定信息[12345678]操作成功，日志关键字~
     '''
-    with open(data_file, 'w') as csvfile:
+    with open(argvs[1], 'w') as csvfile:
         fieldnames = ['field1', 'field2', 'field3', 'field4', 'field5']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
